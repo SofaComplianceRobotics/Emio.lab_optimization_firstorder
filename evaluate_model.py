@@ -1,7 +1,8 @@
 import sys
+import os
 from pathlib import Path
 
-from modules.lab_utils import load_dataset
+from modules.lab_utils import load_dataset, LAB_PATH, fix_path
 
 
 def evaluate_pytorch_model(dataset_path, model_path):
@@ -48,10 +49,13 @@ if __name__ == "__main__":
     dataset_path = args.dataset_path
     model_path = args.model_path
 
-    if not dataset_path.exists():
+    dataset_path = fix_path(dataset_path)
+    if dataset_path is None:
         print(f"Dataset file not found: {dataset_path}")
         sys.exit(1)
-    if not model_path.exists():
+
+    model_path = fix_path(model_path)
+    if model_path is None:
         print(f"Model file not found: {model_path}")
         sys.exit(1)
 

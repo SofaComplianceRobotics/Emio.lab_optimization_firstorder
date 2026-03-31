@@ -23,23 +23,24 @@ else:
     )
 
 from modules.calibration import calibrate_young
-from modules.lab_utils import load_dataset
+from modules.lab_utils import load_dataset, LAB_PATH, fix_path
 from modules.pytorch_mlp import PytorchMLPReg
 
-DEFAULT = "pytorch"
+DEFAULT = "calibrated"
 
 
 def train_pytorch_model(dataset_path, from_real=False):
     x_train, y_train, x_test, y_test = load_dataset(dataset_path, from_real)
 
+    dataset_fname = dataset_path.parts[-1].strip(".csv")
+    fname = f"{LAB_PATH}/data/results/{dataset_fname}.pth"
+
     mlp = PytorchMLPReg()
 
     mlp.train(x_train, y_train, x_test, y_test, n_epochs=2_000)
 
-    dataset_fname = dataset_path.parts[-1].strip(".csv")
-    fname = f"data/results/{dataset_fname}.pth"
     mlp.save(fname)
-    print(f"Trained model saved at {fname}")
+    print(f"Trained model saved at {os.path.abspath(fname)}")
 
 
 if __name__ == "__main__":
@@ -58,7 +59,7 @@ if __name__ == "__main__":
         "--dataset-path",
         type=Path,
         default=Path(
-            "/home/frederike/emio-labs/v25.12.01/assets/labs/Practical1/data/results/blueleg_beam_sphere.csv"
+            "data/results/blueleg_beam_sphere.csv"
         ),
         help="Path to dataset CSV",
     )
@@ -73,7 +74,9 @@ if __name__ == "__main__":
     dataset_path = args.dataset_path
     learn_from_real = args.from_real
     model_type = args.model_type
-    if not os.path.exists(dataset_path):
+
+    dataset_path = fix_path(dataset_path)
+    if dataset_path is None:
         print(f"Dataset file not found: {dataset_path}")
         sys.exit(1)
 

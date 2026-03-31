@@ -1,4 +1,4 @@
-# Practical 1: Model Learning
+# First-Order Optimization: Model Learning
 
 ::: highlight
 ##### Overview
@@ -18,12 +18,14 @@ Click the button below to install them:
 
 ::::
 
+<a id="datasets"></a>
 :::: collapse Datasets
-## Datasets
+## Datasets 
 
 The datasets used in this lab are in CSV files containing the motors angles and the corresponding end-effector positions of Emio. The datasets are located in the `data/results` folder. Both datasets have the following fields:
 - the four motors angles _m0_, _m1_, _m2_ and _m3_
 - the 3D position of the effector _pos_
+
 
 ### Simulation
 
@@ -33,13 +35,19 @@ Two datasets, created in simulation, are available:
 
 They have been generated using the SOFA simulation of Emio, with the script `dataset_generation.py`.
 
+You can take a look at `blueleg_beam_cube.csv`: 
+#open-button(file="assets/labs/Practical1/data/results/blueleg_beam_cube.csv")
+
 ### Real Robot
 
 Equivalent datasets were recorded on the Emio robot:
-- `blueleg_beam_real_cube2196.csv`
+- `blueleg_beam_real_cube2197.csv`
 - `blueleg_beam_real_sphere1018.csv`
 
 These datasets were created by tracking the robot's tool center point (TCP) position with a _Polhemus_ magnetic tracker. These datasets have an extra column `Real Position` with the recorded tracked position.
+
+You can take a look at `blueleg_beam_real_cube2197.csv`: 
+#open-button(file="assets/labs/Practical1/data/results/blueleg_beam_real_cube2197.csv")
 
 ::::
 
@@ -56,6 +64,8 @@ The activation function used in the hidden layers is the sigmoid function and th
 In the file `modules/pytorch_mlp.py`, complete the code to create a PyTorch MLP 
 with 2 linear layers of 128 neurons each (`nn.Linear`), and a sigmoid activation function at the hidden layers (`nn.Sigmoid`).
 
+#open-button(file="assets/labs/Practical1/modules/pytorch_mlp.py")
+
 :::
 
 ::::
@@ -70,41 +80,50 @@ The script will preprocess the data, build the MLP, train it, and save the train
 **Exercise 2:**
 
 1. In `modules/pytorch_mlp.py`, finish implementing the training loop. As loss, use the mean-square error `nn.MSELoss()`. As solver, you can use the Adam algorithm `optimizer = optim.Adam(self.model.parameters())`
+#open-button(file="assets/labs/Practical1/modules/pytorch_mlp.py")
 
 2. Train the model, using the `train_model.py`: 
-<!-- Removed from below: [--from-real] -->
-```bash
-python train_model.py --model-type pytorch --dataset-path data/results/blueleg_beam_cube.csv 
-```
+
+    #python-button(file="assets/labs/Practical1/train_model.py", pyargs=["--model-type", "pytorch", "--dataset-path",  "assets/labs/Practical1/data/results/blueleg_beam_cube.csv"])
 
 3. Inspect the convergence. If necessary, tune the parameters of Adam for better results. 
 
 :::
 ::::
 
-:::: collapse Evaluate MLP Model
+:::::: collapse Evaluate MLP Model
 ### Evaluate MLP Model
 
 First, we can do a statistical evaluation. We evaluate the performance of the trained dataset on other datasets.  
 
-::: exercise
+::::: exercise
 **Exercise 3:**
 
-Evaluate the learned model by calling
-```bash
-python evaluate_model.py --model-type pytorch --dataset-path <path/to/dataset.csv> --model-path data/results/blueleg_beam_cube.pth
-```
+Evaluate the learned model:
 
-Replace `<path/to/dataset.csv>` by each of the four datasets. Comment in your report. On what dataset does the model perform best? On which one does it perform worst? Can you explain the observed behavior? 
+Try with each by each of the four [datasets](#datasets). 
 
-:::
+:::: select eval_pytorch_dataset 
+::: option assets/labs/Practical1/data/results/blueleg_beam_cube.csv
+::: option blueleg_beam_sphere.csv
+::: option blueleg_beam_real_cube2197.csv
+::: option blueleg_beam_real_sphere1018.csv
+::::
 
-Finally, you can use your model to control the robot. The scene `sofa_sim.py` is already set up to use your trained model. You just need to specify the path to your model file in the scene:
+Comment in your report. On what dataset does the model perform best? On which one does it perform worst? Can you explain the observed behavior? 
+
+#python-button(file="assets/labs/Practical1/evaluate_model.py", pyargs=["--model-type", "pytorch", "--dataset-path",  "eval_pytorch_dataset", "--model-path", "assets/labs/Practical1/data/results/blueleg_beam_cube.pth"])
+
+
+:::::
+
+Finally, you can use your model to control the robot. The scene `sofa_sim.py` is already set up to use your trained model. You just need to specify the path to your model `.pth` file in the scene:
 #input("eval_pytorch_model_path", "Path to the model pth file", "assets/labs/Practical1/data/results/blueleg_beam_cube.pth")
 
 The effector will then move to the different targets sampled along the sphere or cube, as shown below:
 
 ![](assets/labs/Practical1/data/images/evaluation_sphere.png)
+
 
 ::: exercise
 
@@ -112,11 +131,6 @@ The effector will then move to the different targets sampled along the sphere or
 
 Run the sofa simulation and observe how the robot moves to the prescribed points. Describe the behavior in your report. 
 
-For **Ubuntu** users, use this button first to start the inference server:
-#python-button("'assets/labs/Practical1/inferenceServer.py' data/results/blueleg_beam_cube.pth")
-
-
-Start the simulation by pressing the SOFA button below:
 #runsofa-button("assets/labs/Practical1/sofa_sim.py", "eval_pytorch_model_path", "sphere", "0.1")
 
 :::
@@ -131,25 +145,25 @@ Run the above script on the real robot. Describe the observed behavior in your r
 
 :::
 
-<!-- Do a more comprehensive performance study of the model, dataset, and optimizer. This is where your creativity is required! Think about some interesting phenomenon to study, formulate a hypothesis, and then run a little experiment to test this. Feel free to ask your classmates and the teaching crew to brainstorm some ideas. -->
-
-::::
+::::::
 
 :::: collapse Parametric Model Learning 
 
 Learning inverse kinematics with a deep neural network is one way to do things, but certainly not the only and possibly not the optimal way. In the next practical, we 
-will solve inverse kinematics using a model-based way. However, to get good performance, we will need accurate models. We can use physical principles to setup good models but there are always some parameters that need to be tuned. We can learn these parameters using collected data. This is called calibration or parametric model learning.
+will solve inverse kinematics using a model-based way. However, to get good performance, we will need accurate models. We can use physical principles to setup good models but there are always some parameters that need to be tuned. We can learn these parameters using collected data. This is called **calibration** or parametric model learning.
 
 ::: exercise
 **Exercise 6:**
 
 - In `train_model.py`, there is an option to use `calibrated` instead of `pytorch`. Inspect the code for the proposed calibration and comment on the implementation. In particular, what principle is being used here to calibrate the Young modulus?
+    #open-button(file="assets/labs/Practical1/train_model.py")
 
-- Go to `train_model.py` and make sure the default variable is set to calibrated: `DEFAULT="calibrated"`. 
+- Go to `train_model.py` and make sure the default variable is set to calibrated: `DEFAULT="calibrated"`.
+    #open-button(file="assets/labs/Practical1/train_model.py")
 
 - By clicking the below button, you run `train_model.py` using the calibrated option. Observe the convergence behavior. Do you understand why the algorithm behaves the way it does? 
 
-#python-button("'assets/labs/Practical1/train_model.py' --dataset-path 'assets/labs/Practical1/data/results/blueleg_beam_sphere.csv'")
+#python-button(file="assets/labs/Practical1/train_model.py" pyargs=["--dataset-path", "assets/labs/Practical1/data/results/blueleg_beam_sphere.csv"])
 
 
 ::: 
@@ -176,7 +190,7 @@ This will generate a dataset into the _data/results_ folder.
 
 #input("dataset_ratio", "Ratio to sample (the higher the coarser)", "0.08")
 
-#runsofa-button("assets/labs/Practical1/lab_AI_dataset_generation.py", "dataset_shape", "dataset_ratio")
+#runsofa-button("assets/labs/Practical1/dataset_generation.py", "dataset_shape", "dataset_ratio")
 
 <br>
 
