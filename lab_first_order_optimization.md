@@ -217,3 +217,5 @@ Effector position;Motor angle
 :::::
 
 ::::::
+
+#include(assets/labs/lab_first_order_optimization/sections/authors.md)
