@@ -14,7 +14,13 @@ You will build, train, and evaluate the MLP using PyTorch, and in the end of the
 We are going to need third-parties libraries for this lab.
 
 Click the button below to install them:
-#python-button("-m pip install --target 'assets/labs/Practical1/modules/site-packages' -r 'assets/labs/Practical1/requirements.txt'")
+#python-button("-m pip install --target 'assets/labs/lab_first_order_optimization/modules/site-packages' -r 'assets/labs/lab_first_order_optimization/requirements.txt'")
+
+The installed modules are:
+
+```python
+#include(assets/labs/lab_first_order_optimization/requirements.txt)
+```
 
 ::::
 
@@ -30,24 +36,24 @@ The datasets used in this lab are in CSV files containing the motors angles and 
 ### Simulation
 
 Two datasets, created in simulation, are available:
-- `blueleg_beam_cube.csv`:
-- `blueleg_beam_sphere.csv`:
+- `blueleg_beam_cube.csv`: by sampling 1331 points in a cube
+- `blueleg_beam_sphere.csv`: by sampling 515 points in a sphere
 
 They have been generated using the SOFA simulation of Emio, with the script `dataset_generation.py`.
 
 You can take a look at `blueleg_beam_cube.csv`: 
-#open-button(file="assets/labs/Practical1/data/results/blueleg_beam_cube.csv")
+#open-button(file="assets/labs/lab_first_order_optimization/data/results/blueleg_beam_cube.csv")
 
 ### Real Robot
 
-Equivalent datasets were recorded on the Emio robot:
-- `blueleg_beam_real_cube2197.csv`
-- `blueleg_beam_real_sphere1018.csv`
+Equivalent datasets were recorded on the Emio robot using a high precision magnetic sensor:
+- `blueleg_beam_real_cube2197.csv`: by sampling 2197 points in a cube, contains both the simulated and measured effector positions
+- `blueleg_beam_real_sphere1018.csv`: : by sampling 1018 points in a sphere, contains both the simulated and measured effector positions
 
 These datasets were created by tracking the robot's tool center point (TCP) position with a _Polhemus_ magnetic tracker. These datasets have an extra column `Real Position` with the recorded tracked position.
 
 You can take a look at `blueleg_beam_real_cube2197.csv`: 
-#open-button(file="assets/labs/Practical1/data/results/blueleg_beam_real_cube2197.csv")
+#open-button(file="assets/labs/lab_first_order_optimization/data/results/blueleg_beam_real_cube2197.csv")
 
 ::::
 
@@ -64,7 +70,7 @@ The activation function used in the hidden layers is the sigmoid function and th
 In the file `modules/pytorch_mlp.py`, complete the code to create a PyTorch MLP 
 with 2 linear layers of 128 neurons each (`nn.Linear`), and a sigmoid activation function at the hidden layers (`nn.Sigmoid`).
 
-#open-button(file="assets/labs/Practical1/modules/pytorch_mlp.py")
+#open-button(file="assets/labs/lab_first_order_optimization/modules/pytorch_mlp.py")
 
 :::
 
@@ -80,11 +86,11 @@ The script will preprocess the data, build the MLP, train it, and save the train
 **Exercise 2:**
 
 1. In `modules/pytorch_mlp.py`, finish implementing the training loop. As loss, use the mean-square error `nn.MSELoss()`. As solver, you can use the Adam algorithm `optimizer = optim.Adam(self.model.parameters())`
-#open-button(file="assets/labs/Practical1/modules/pytorch_mlp.py")
+#open-button(file="assets/labs/lab_first_order_optimization/modules/pytorch_mlp.py")
 
 2. Train the model, using the `train_model.py`: 
 
-    #python-button(file="assets/labs/Practical1/train_model.py", pyargs=["--model-type", "pytorch", "--dataset-path",  "assets/labs/Practical1/data/results/blueleg_beam_cube.csv"])
+    #python-button(file="assets/labs/lab_first_order_optimization/train_model.py", pyargs=["--model-type", "pytorch", "--dataset-path",  "blueleg_beam_cube.csv"])
 
 3. Inspect the convergence. If necessary, tune the parameters of Adam for better results. 
 
@@ -104,7 +110,7 @@ Evaluate the learned model:
 Try with each by each of the four [datasets](#datasets). 
 
 :::: select eval_pytorch_dataset 
-::: option assets/labs/Practical1/data/results/blueleg_beam_cube.csv
+::: option blueleg_beam_cube.csv
 ::: option blueleg_beam_sphere.csv
 ::: option blueleg_beam_real_cube2197.csv
 ::: option blueleg_beam_real_sphere1018.csv
@@ -112,17 +118,17 @@ Try with each by each of the four [datasets](#datasets).
 
 Comment in your report. On what dataset does the model perform best? On which one does it perform worst? Can you explain the observed behavior? 
 
-#python-button(file="assets/labs/Practical1/evaluate_model.py", pyargs=["--model-type", "pytorch", "--dataset-path",  "eval_pytorch_dataset", "--model-path", "assets/labs/Practical1/data/results/blueleg_beam_cube.pth"])
+#python-button(file="assets/labs/lab_first_order_optimization/evaluate_model.py", pyargs=["--model-type", "pytorch", "--dataset-path",  "eval_pytorch_dataset", "--model-path", "assets/labs/lab_first_order_optimization/data/results/blueleg_beam_cube.pth"])
 
 
 :::::
 
 Finally, you can use your model to control the robot. The scene `sofa_sim.py` is already set up to use your trained model. You just need to specify the path to your model `.pth` file in the scene:
-#input("eval_pytorch_model_path", "Path to the model pth file", "assets/labs/Practical1/data/results/blueleg_beam_cube.pth")
+#input("eval_pytorch_model_path", "Path to the model pth file", "assets/labs/lab_first_order_optimization/data/results/blueleg_beam_cube.pth")
 
 The effector will then move to the different targets sampled along the sphere or cube, as shown below:
 
-![](assets/labs/Practical1/data/images/evaluation_sphere.png)
+![](assets/labs/lab_first_order_optimization/data/images/evaluation_sphere.png)
 
 
 ::: exercise
@@ -131,7 +137,7 @@ The effector will then move to the different targets sampled along the sphere or
 
 Run the sofa simulation and observe how the robot moves to the prescribed points. Describe the behavior in your report. 
 
-#runsofa-button("assets/labs/Practical1/sofa_sim.py", "eval_pytorch_model_path", "sphere", "0.1")
+#runsofa-button("assets/labs/lab_first_order_optimization/sofa_sim.py", "eval_pytorch_model_path", "sphere", "0.1")
 
 :::
 
@@ -156,14 +162,14 @@ will solve inverse kinematics using a model-based way. However, to get good perf
 **Exercise 6:**
 
 - In `train_model.py`, there is an option to use `calibrated` instead of `pytorch`. Inspect the code for the proposed calibration and comment on the implementation. In particular, what principle is being used here to calibrate the Young modulus?
-    #open-button(file="assets/labs/Practical1/train_model.py")
+    #open-button(file="assets/labs/lab_first_order_optimization/train_model.py")
 
 - Go to `train_model.py` and make sure the default variable is set to calibrated: `DEFAULT="calibrated"`.
-    #open-button(file="assets/labs/Practical1/train_model.py")
+    #open-button(file="assets/labs/lab_first_order_optimization/train_model.py")
 
 - By clicking the below button, you run `train_model.py` using the calibrated option. Observe the convergence behavior. Do you understand why the algorithm behaves the way it does? 
 
-#python-button(file="assets/labs/Practical1/train_model.py" pyargs=["--dataset-path", "assets/labs/Practical1/data/results/blueleg_beam_sphere.csv"])
+#python-button(file="assets/labs/lab_first_order_optimization/train_model.py" pyargs=["--dataset-path", "assets/labs/lab_first_order_optimization/data/results/blueleg_beam_sphere.csv"])
 
 
 ::: 
@@ -190,7 +196,7 @@ This will generate a dataset into the _data/results_ folder.
 
 #input("dataset_ratio", "Ratio to sample (the higher the coarser)", "0.08")
 
-#runsofa-button("assets/labs/Practical1/dataset_generation.py", "dataset_shape", "dataset_ratio")
+#runsofa-button("assets/labs/lab_first_order_optimization/dataset_generation.py", "dataset_shape", "dataset_ratio")
 
 <br>
 

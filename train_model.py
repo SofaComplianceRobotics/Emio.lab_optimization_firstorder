@@ -26,7 +26,7 @@ from modules.calibration import calibrate_young
 from modules.lab_utils import load_dataset, LAB_PATH, fix_path
 from modules.pytorch_mlp import PytorchMLPReg
 
-DEFAULT = "calibrated"
+DEFAULT = "pytorch"
 
 
 def train_pytorch_model(dataset_path, from_real=False):
