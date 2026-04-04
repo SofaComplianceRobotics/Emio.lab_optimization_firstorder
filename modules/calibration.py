@@ -61,9 +61,9 @@ def calibrate_young(dataset, from_real=False):
     print("Done reading dataset")
 
     delta = 1e4  # finite-diff parameter
-    alpha = 1e1  # stepsize
+    alpha = 1e3  # stepsize
 
-    E = 2800.0  # starting value of E
+    E = 5000.0  # starting value of E
     converged = False
     msg = "reached maximum number of iterations"
 

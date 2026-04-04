@@ -149,7 +149,7 @@ will solve inverse kinematics using a model-based way. However, to get good perf
 
 - By clicking the below button, you run `train_model.py` using the calibrated option. Observe the convergence behavior. Do you understand why the algorithm behaves the way it does? 
 
-#python-button("assets/labs/Practical1/train_model.py")
+#python-button("'assets/labs/Practical1/train_model.py' --dataset-path 'assets/labs/Practical1/data/results/blueleg_beam_sphere.csv'")
 
 
 ::: 
