@@ -1,6 +1,5 @@
 # Emio Lab First-Order Optimization
-
-![](data/images/evaluation_sphere.png)
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/d33744ae-af4f-4655-b62f-c08217c8a38a" />
 
 
 This lab aims at, in a first part, introducing the inverse kinematics of Emio using a multilayer perceptron (MLP) to model the mapping from end-effector position to motor angles. In a second part, the concept of parametric model is introduced to calibrate the youg modulus.
