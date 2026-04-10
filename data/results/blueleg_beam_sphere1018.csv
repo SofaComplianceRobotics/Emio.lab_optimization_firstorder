@@ -1,0 +1,9 @@
+# extended ;1
+# legs ;['blueleg']
+# legs model ;['beam']
+# legs young modulus ;[35000.]
+# legs poisson ratio ;[0.45]
+# legs position on motor ;['counterclockwisedown', 'clockwisedown', 'counterclockwisedown', 'clockwisedown']
+# connector ;bluepart
+# connector type ;rigid
+Effector position;Motor angle

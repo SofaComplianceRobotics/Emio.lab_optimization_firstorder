@@ -32,7 +32,7 @@ if __name__ == "__main__":
         "--dataset-path",
         type=Path,
         required=False,
-        default=Path("data/results/blueleg_beam_sphere.csv"),
+        default=Path("data/results/blueleg_beam_sphere515.csv"),
         help="Path to dataset CSV",
     )
     parser.add_argument(

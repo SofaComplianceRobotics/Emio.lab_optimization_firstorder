@@ -36,13 +36,13 @@ The datasets used in this lab are in CSV files containing the motors angles and 
 ### Simulation
 
 Two datasets, created in simulation, are available:
-- `blueleg_beam_cube.csv`: by sampling 1331 points in a cube
-- `blueleg_beam_sphere.csv`: by sampling 515 points in a sphere
+- `blueleg_beam_cube1331.csv`: by sampling 1331 points in a cube
+- `blueleg_beam_sphere515.csv`: by sampling 515 points in a sphere
 
 They have been generated using the SOFA simulation of Emio, with the script `dataset_generation.py`.
 
-You can take a look at `blueleg_beam_cube.csv`: 
-#open-button(file="assets/labs/lab_optimization_firstorder/data/results/blueleg_beam_cube.csv")
+You can take a look at `blueleg_beam_cube1331.csv`: 
+#open-button(file="assets/labs/lab_optimization_firstorder/data/results/blueleg_beam_cube1331.csv")
 
 ### Real Robot
 
@@ -90,7 +90,7 @@ The script will preprocess the data, build the MLP, train it, and save the train
 
 2. Train the model, using the `train_model.py`: 
 
-    #python-button(file="assets/labs/lab_optimization_firstorder/train_model.py", pyargs=["--model-type", "pytorch", "--dataset-path",  "blueleg_beam_cube.csv"])
+    #python-button(file="assets/labs/lab_optimization_firstorder/train_model.py", pyargs=["--model-type", "pytorch", "--dataset-path",  "blueleg_beam_cube1331.csv"])
 
 3. Inspect the convergence. If necessary, tune the parameters of Adam for better results. 
 
@@ -110,8 +110,8 @@ Evaluate the learned model:
 Try with each by each of the four [datasets](#datasets). 
 
 :::: select eval_pytorch_dataset 
-::: option blueleg_beam_cube.csv
-::: option blueleg_beam_sphere.csv
+::: option blueleg_beam_cube1331.csv
+::: option blueleg_beam_sphere515.csv
 ::: option blueleg_beam_real_cube2197.csv
 ::: option blueleg_beam_real_sphere1018.csv
 ::::
@@ -169,7 +169,7 @@ will solve inverse kinematics using a model-based way. However, to get good perf
 
 - By clicking the below button, you run `train_model.py` using the calibrated option. Observe the convergence behavior. Do you understand why the algorithm behaves the way it does? 
 
-#python-button(file="assets/labs/lab_optimization_firstorder/train_model.py" pyargs=["--dataset-path", "assets/labs/lab_optimization_firstorder/data/results/blueleg_beam_sphere.csv"])
+#python-button(file="assets/labs/lab_optimization_firstorder/train_model.py" pyargs=["--dataset-path", "assets/labs/lab_optimization_firstorder/data/results/blueleg_beam_sphere515.csv"])
 
 
 ::: 
@@ -200,7 +200,7 @@ This will generate a dataset into the _data/results_ folder.
 
 <br>
 
-Here is is an excerpt of the _blueleg_beam_sphere.csv_ dataset file that comes with this lab:
+Here is is an excerpt of the _blueleg_beam_sphere515.csv_ dataset file that comes with this lab:
 
 ```text
 # extended ;1

@@ -1,8 +1,13 @@
+import copy
+
 import numpy as np
 
-DEBUG = True
+DEBUG = False
 
-def createScene(rootnode, youngModulus):
+def createScene(rootnode):
+    createScene2(rootnode, 3.5e4)
+
+def createScene2(rootnode, youngModulus):
     from parts.emio import Emio
     from utils.header import addHeader, addSolvers
     from parts.controllers.assemblycontroller import AssemblyController
@@ -15,7 +20,6 @@ def createScene(rootnode, youngModulus):
     addSolvers(simulation)
     rootnode.VisualStyle.displayFlags.value = ["hideBehavior"]
 
-    extended = True
     emio = Emio(name="Emio",
                 legsName=["blueleg", "blueleg", "blueleg", "blueleg"],
                 legsModel=["beam"],
@@ -23,7 +27,7 @@ def createScene(rootnode, youngModulus):
                 legsYoungModulus=[youngModulus],
                 centerPartName="bluepart",
                 centerPartType="rigid",
-                extended=extended)
+                extended=True)
     if not emio.isValid():
         return
     
@@ -34,18 +38,18 @@ def createScene(rootnode, youngModulus):
 
     simulation.addChild(emio)
     emio.attachCenterPartToLegs()
-    emio.addObject(AssemblyController(emio))
+    assembly = AssemblyController(emio)
+    assembly.duration = 0.2
+    emio.addObject(assembly)
 
     # Add effector
     emio.effector.addObject("MechanicalObject", template="Rigid3", position=[0, 0, 0, 0, 0, 0, 1])
     emio.effector.addObject("RigidMapping", index=0)
 
-    print("Legs Young modulus: ", emio.Leg0.Leg0RigidBase.RigidifiedPoints.Leg.BeamInterpolation.defaultYoungModulus.value)
-
     return rootnode
 
 
-def run_forward_simulation(young_modulus, motor_angles):
+def run_forward_simulation(young_modulus, motor_angles: list[list[float]]) -> np.ndarray:
     """
     Simulate forward kinematics using SOFA simulation.
 
@@ -69,30 +73,48 @@ def run_forward_simulation(young_modulus, motor_angles):
     parameters.youngModulus = young_modulus
 
     # important to call this after parameters has been set.
-    createScene(root, young_modulus)
+    createScene2(root, young_modulus)
 
     Sofa.Simulation.init(root)
 
     # Set motor angles
     emio = root.Simulation.Emio
 
-    for i in range(4):
-        emio.getChild(f"Motor{i}").JointActuator.value = motor_angles[i]
+    dt = 0.01
 
+    # Run for assembly
+    for _ in range(25):
+        Sofa.Simulation.animate(root, dt)
 
     # Run the simulation for a fixed number of steps
-    dt = 0.01
-    for _ in range(50):
-        Sofa.Simulation.animate(root, dt)
-        if DEBUG:
-            position = emio.CenterPart.Effector.getMechanicalState().position[0]
+    positions = []
+    for angles in motor_angles:
+        for i in range(4):
+            emio.getChild(f"Motor{i}").JointActuator.value = angles[i]
 
-    # Retrieve the position of the effector
-    position = emio.CenterPart.Effector.getMechanicalState().position[0]
-    print(position[:3].round(2))
+        last_position = None
+        position_change = None
 
-    # Return as numpy array (first 3 components: x, y, z)
-    return np.array(position[:3])
+        for _ in range(25):
+            Sofa.Simulation.animate(root, dt)
+            p = emio.CenterPart.Effector.getMechanicalState().position[0]
+            if DEBUG:
+                print("Current position:", p)
+            if last_position is None:
+                last_position = copy.deepcopy(p)
+                continue
+            else:
+                position_change = np.linalg.norm(np.array(p) - np.array(last_position))
+                last_position = copy.deepcopy(p)
+                if DEBUG:
+                    print(position_change)
+        if position_change > 1e-1:
+            print("Warning: Simulation may not have converged. Final position change:", position_change)
+
+        # Retrieve the position of the effector
+        positions.append(copy.deepcopy(emio.CenterPart.Effector.getMechanicalState().position[0][:3])) # Return as numpy array (first 3 components: x, y, z)
+
+    return np.array(positions)
 
 
 def main():

@@ -1,7 +1,11 @@
+from re import DEBUG
+
 import numpy as np
 import pandas as pd
 
 from modules.sofa_sim_launcher import run_forward_simulation
+
+DEBUG = True
 
 
 def read_dataset(dataset, from_real):
@@ -30,23 +34,14 @@ def read_dataset(dataset, from_real):
         return ast.literal_eval(cleaned_string)
 
     # Extract motor angles (input) and effector positions (output)
-    motor_commands = np.array(
-        [clean_and_eval_list_string(angle) for angle in df["Motor angle"].tolist()]
-    )
+    motor_commands = np.array([clean_and_eval_list_string(angle) for angle in df["Motor angle"].tolist()])
 
     if from_real and "Real Position" in df.columns:
         # Use real measured positions if available
-        end_effector_positions = np.array(
-            [clean_and_eval_list_string(pos) for pos in df["Real Position"].tolist()]
-        )
+        end_effector_positions = np.array([clean_and_eval_list_string(pos) for pos in df["Real Position"].tolist()])
     else:
         # Use simulated effector positions
-        end_effector_positions = np.array(
-            [
-                clean_and_eval_list_string(pos)
-                for pos in df["Effector position"].tolist()
-            ]
-        )
+        end_effector_positions = np.array([clean_and_eval_list_string(pos) for pos in df["Effector position"].tolist()])
 
     # Return as list of (motor_command, end_effector_position) pairs
     dataset_pairs = list(zip(motor_commands, end_effector_positions))
@@ -55,46 +50,91 @@ def read_dataset(dataset, from_real):
 
 
 def calibrate_young(dataset, from_real=False):
+    delta = 1e2  # finite-diff parameter
+    alpha = 1e7  # stepsize
 
+    E = 2.7e4  # starting value of E
+    
+    converged = False
+    msg = "reached maximum number of iterations"
+
+    tol = 1e-7
+    max_iter = 100
+
+    data = []
+    
+    # plot E
+    import matplotlib.pyplot as plt
+    fig = plt.figure(figsize=(15, 5))
+    subplot_E = fig.add_subplot(1, 3, 1)
+    subplot_E.set_title("Calibrated Young's Modulus over Iterations")
+    subplot_E.set_xlabel("Iteration")
+    subplot_E.set_ylabel("Young's Modulus (E)")
+    subplot_error = fig.add_subplot(1, 3, 2)
+    subplot_error.set_title("Simulation Error over Iterations")
+    subplot_error.set_xlabel("Iteration")
+    subplot_error.set_ylabel("Simulation Error (f_sim)")
+    subplot_gradient = fig.add_subplot(1, 3, 3)
+    subplot_gradient.set_title("Gradient over Iterations")
+    subplot_gradient.set_xlabel("Iteration")
+    subplot_gradient.set_ylabel("Gradient (dE)")
+    
     # read dataset of motor angle - end effector position pairs
     dataset_pairs = read_dataset(dataset, from_real)
     print("Done reading dataset")
 
-    delta = 1e4  # finite-diff parameter
-    alpha = 1e3  # stepsize
 
-    E = 5000.0  # starting value of E
-    converged = False
-    msg = "reached maximum number of iterations"
-
-    tol = 1e-8
-    max_iter = 10
     for i in range(max_iter):
+        print("-"*40)
+        print("Batch iteration:", i)
+        print(f"Current Young's modulus: {E:.3f}")
+        print("-"*10)
 
         # select random minibatch
-        pair_indices = np.random.choice(len(dataset_pairs), size=3)
+        pair_indices = np.random.choice(len(dataset_pairs), size=10)
+        gradient = 0
+        error = 0
+        motor_angles_batch = np.array([dataset_pairs[j][0] for j in pair_indices])
+        p_batch = np.array([dataset_pairs[j][1] for j in pair_indices])
 
-        for j in pair_indices:
-            m, p = dataset_pairs[i]
-            # run forward simulator with E, m
-            p_sim = run_forward_simulation(E, m)
-            f_sim = np.linalg.norm(p_sim - p)
+        print(f"Running forward simulation with motor angles:\n {motor_angles_batch}")
 
-            p_sim_delta = run_forward_simulation(E + delta, m)
-            f_sim_delta = np.linalg.norm(p_sim_delta - p)
+        p_sim_batch = run_forward_simulation(E, motor_angles_batch)
+        f_sim_batch = np.linalg.norm(p_sim_batch - p_batch, axis=1)
 
-            # calculate gradient using forward difference
-            gradient = (f_sim_delta - f_sim) / delta
+        p_sim_delta_batch = run_forward_simulation(E + delta, motor_angles_batch)
+        f_sim_delta_batch = np.linalg.norm(p_sim_delta_batch - p_batch, axis=1)
 
-            # update Young modulus
-            E -= alpha * gradient
+        if DEBUG:
+                print("target position:\n", p_batch)
+                print("simulated position:\n", p_sim_batch)
+                print("simulated position with E-delta:\n", p_sim_delta_batch)
 
-            # check convergence
-            print(
-                f"iteration {i}\t datapoint {j}\t E {E:.0f}\t error {f_sim:.4f}, gradient {gradient:.4e}"
-            )
-            if np.abs(gradient) <= tol:
-                msg = "converged in gradient norm"
+        gradient = np.mean((f_sim_delta_batch - f_sim_batch) / delta)
+        error = np.mean(f_sim_batch)
 
-    results = {"msg": msg, "success": converged}
+        # update Young modulus
+        E -= alpha * gradient 
+
+        # check convergence
+        data.append({"iteration": i, "E": E, "error": error, "gradient": gradient})
+
+        print("-"*10)
+        print(f"Results for iteration {i}\n datapoints {pair_indices}\n E {E:.3f}\t error {error:.4f}, gradient {gradient:.4e}")
+
+        subplot_E.plot([d["iteration"] for d in data], [d["E"] for d in data], marker='o')
+        subplot_error.plot([d["iteration"] for d in data], [d["error"] for d in data], marker='x')
+        subplot_gradient.plot([d["iteration"] for d in data], [d["gradient"] for d in data], marker='v')
+
+        if np.abs(gradient) <= tol:
+            converged = True
+            msg = "converged in gradient norm"
+            break
+        
+        plt.pause(0.1)
+        plt.show(block=False)
+
+    print(f"Calibration finished after {i+1} iterations with Young's modulus: {E:.3f} and error: {error:.4f}")
+    plt.show()
+    results = {"msg": msg, "success": converged, "data": pd.DataFrame(data)}
     return E, results

@@ -59,7 +59,7 @@ if __name__ == "__main__":
         "--dataset-path",
         type=Path,
         default=Path(
-            "data/results/blueleg_beam_sphere.csv"
+            "data/results/blueleg_beam_sphere515.csv"
         ),
         help="Path to dataset CSV",
     )
