@@ -2,9 +2,9 @@ import csv
 import os
 from math import pi
 import struct
-import asyncio
 
 import numpy as np
+import torch
 
 import Sofa
 import Sofa.ImGui as MyGui
@@ -20,55 +20,6 @@ OUTPUT_SIZE = struct.calcsize(OUTPUT_FMT)
 resultsDirectory = os.path.dirname(os.path.realpath(__file__)) + "/data/results/"
 STEP = 25
 
-import asyncio
-import threading
-
-class AsyncWorker:
-    def __init__(self):
-        self.loop = asyncio.new_event_loop()
-        self.thread = threading.Thread(
-            target=self._run_loop, daemon=True
-        )
-        self.thread.start()
-
-    def _run_loop(self):
-        asyncio.set_event_loop(self.loop)
-        self.loop.run_forever()
-
-    def run(self, coro):
-        """Run async coroutine synchronously"""
-        future = asyncio.run_coroutine_threadsafe(coro, self.loop)
-        return future.result()
-    
-async def createAsyncObject():
-    reader, writer = await asyncio.open_connection(
-        "127.0.0.1", 5000
-    )
-    return reader, writer
-
-async def writeAdnRead(input_vec, writer, reader):
-    """
-    input_vec: iterable of 3 floats (x, y, z)
-    returns: tuple of 4 floats (a0, a1, a2, a3)
-    """
-
-    # Serialize input
-    data_in = struct.pack(
-        INPUT_FMT,
-        float(input_vec[0]),
-        float(input_vec[1]),
-        float(input_vec[2]),
-    )
-
-    # Send
-    writer.write(data_in)
-    await writer.drain()
-    # Receive exactly 4 floats
-    data_out = await reader.readexactly(OUTPUT_SIZE)
-    a0, a1, a2, a3 = struct.unpack(OUTPUT_FMT, data_out)
-    return np.array([[a0, a1, a2, a3]])
-
-
 class MLPController(Sofa.Core.Controller):
     """
     A Controller that loads a trained MLP model to predict the motor angles for Emio
@@ -81,15 +32,8 @@ class MLPController(Sofa.Core.Controller):
         self.emio = emio
         self.model_file = model_file
 
-        #### ASYNC COMMUNICATION ####
-        if os.name == 'posix':
-            self.async_worker = AsyncWorker()
-            self.reader, self.writer = self.async_worker.run(
-                createAsyncObject()
-            )
-        else:
-            from modules.pytorch_mlp import PytorchMLPReg
-            self.regr = PytorchMLPReg(model_file=self.model_file, batch_size=1)
+        from modules.pytorch_mlp import PytorchMLPReg
+        self.regr = PytorchMLPReg(model_file=self.model_file, batch_size=1)
 
         #### GUI ####
         self.emio.addData(name="target_X", type="float", value=0.0)
@@ -114,22 +58,16 @@ class MLPController(Sofa.Core.Controller):
                 float(self.emio.target_Z.value),
             ])
 
-            if os.name == 'posix':
-                output = self.async_worker.run(
-                    writeAdnRead(input, self.writer, self.reader)
-                )
-                motors_angles = output
-            else:
-                import torch
-                target = torch.tensor(
-                    [
-                        input
-                    ],
-                    dtype=torch.float32,
-                    device="cpu",
-                )
-                with torch.inference_mode():
-                    motors_angles = self.regr.predict(target)
+            target = torch.tensor(
+                [
+                    input
+                ],
+                dtype=torch.float32,
+                device="cpu",
+            )
+            with torch.inference_mode():
+                motors_angles = self.regr.predict(target)
+
             for i in range(4):
                 self.emio.getChild(f"Motor{i}").JointActuator.value = motors_angles[0][i]
 
