@@ -2,26 +2,6 @@ import os
 import sys
 from pathlib import Path
 
-if os.name == "posix":
-    os.environ["SOFA_ROOT"] = "/opt/emio-labs/resources/sofa"
-    sys.path.insert(0, "~/emio-labs/v25.12.01/assets")
-    sys.path.insert(
-        0,
-        "/opt/emio-labs/resources/sofa/plugins/SofaPython3/lib/python3/site-packages/",
-    )
-else:
-    home = Path.home()
-    appdata = os.getenv("LOCALAPPDATA")
-    os.environ["SOFA_ROOT"] = os.path.join(
-        appdata, "Programs\\emio-labs\\resources\\sofa"
-    )
-    sys.path.append(home.joinpath("/emio-labs/v25.12.01/assets"))
-    sys.path.append(
-        os.path.join(
-            os.environ["SOFA_ROOT"], "plugins\\SofaPython3\\lib\\python3\\site-packages"
-        )
-    )
-
 from modules.calibration import calibrate_young
 from modules.lab_utils import load_dataset, LAB_PATH, fix_path
 from modules.pytorch_mlp import PytorchMLPReg
