@@ -172,9 +172,12 @@ will solve inverse kinematics using a model-based way. However, to get good perf
 #python-button(file="assets/labs/lab_optimization_firstorder/train_model.py" pyargs=["--dataset-path", "assets/labs/lab_optimization_firstorder/data/results/blueleg_beam_sphere515.csv"])
 
 
-::: 
+After around 30 iterations, you should notice a convergence of the Young modulus like below
 
-In Practical 2, we will fix the above behavior and use the calibrated model in our inverse kinematics pipeline, and you can then properly compare this model-based approach with the deep-learning approach. 
+![](assets/labs/lab_optimization_firstorder/data/images/calibration.png)
+
+
+:::
 
 ::::
 
@@ -189,12 +192,22 @@ In Practical 2, we will fix the above behavior and use the calibrated model in o
 You can generate your own dataset using this scene.
 This will generate a dataset into the _data/results_ folder.
 
+
+
+*Shape of dataset*
 :::: select dataset_shape 
 ::: option sphere
 ::: option cube
 ::::
 
+*Sampling rate*
+
 #input("dataset_ratio", "Ratio to sample (the higher the coarser)", "0.08")
+
+
+<br>
+
+Launch SOFA and play the simulation to start generating.
 
 #runsofa-button(file="assets/labs/lab_optimization_firstorder/dataset_generation.py", pyargs=["dataset_shape", "dataset_ratio"])
 
