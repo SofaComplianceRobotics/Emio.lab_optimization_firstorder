@@ -8,9 +8,9 @@ def createScene(rootnode):
     createScene2(rootnode, 3.5e4)
 
 def createScene2(rootnode, youngModulus):
-    from parts.emio import Emio
-    from utils.header import addHeader, addSolvers
-    from parts.controllers.assemblycontroller import AssemblyController
+    from emio import Emio
+    from emio.utils.header import addHeader, addSolvers
+    from emio.parts.controllers.assemblycontroller import AssemblyController
     from math import pi
 
     settings, modelling, simulation = addHeader(rootnode, inverse=False)
@@ -60,7 +60,7 @@ def run_forward_simulation(young_modulus, motor_angles: list[list[float]]) -> np
     Returns:
         End-effector position as numpy array [x, y, z]
     """
-    import parameters
+    import emio.parameters as parameters
     import Sofa
     import SofaRuntime
 
@@ -68,6 +68,7 @@ def run_forward_simulation(young_modulus, motor_angles: list[list[float]]) -> np
     SofaRuntime.importPlugin("Sofa.Component")
     SofaRuntime.importPlugin("Sofa.GUI.Component")
     SofaRuntime.importPlugin("Sofa.GL.Component")
+
     root = Sofa.Core.Node("root")
     # Set the Young's modulus parameter
     parameters.youngModulus = young_modulus
