@@ -218,10 +218,10 @@ def createScene(rootnode):
     import argparse
     import sys
 
-    from parts.controllers.assemblycontroller import AssemblyController
-    from parts.controllers.trackercontroller import DotTracker
-    from parts.emio import Emio
-    from utils.header import addHeader, addSolvers
+    from emio.parts.controllers.assemblycontroller import AssemblyController
+    from emio.parts.controllers.trackercontroller import DotTracker
+    from emio import Emio
+    from emio.utils.header import addHeader, addSolvers
 
     ## Parse args
     parser = argparse.ArgumentParser(prog=sys.argv[0], description="Simulate a leg.")
