@@ -1,7 +1,7 @@
 {
-    "name": "Practical1",
-    "filename": "lab_practical1.md",
-    "title": "Practical1",
-    "description": "learn models from data",
-    "url": "https://github.com/Advanced-Optimization/Practical1"
+    "name": "lab_optimization_firstorder",
+    "filename": "lab_optimization_firstorder.md",
+    "title": "Lab First-Order Optimization",
+    "description": "Learn models from data",
+    "url": "https://github.com/SofaComplianceRobotics/Emio.lab_optimization_firstorder"
 }

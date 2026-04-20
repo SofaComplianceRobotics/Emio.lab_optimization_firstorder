@@ -42,7 +42,7 @@ class TargetController(Sofa.Core.Controller):
             Change the target when it's time
         """
         delta = np.array(self.emio.effector.getMechanicalState().position.value[0][0:3]) - np.array(self.targetsPosition[self.targetIndex])
-        if np.linalg.norm(delta) < 0.5:
+        if np.linalg.norm(delta) < 1e-3:
             self.targetReached = True
 
         if self.assembly.done:

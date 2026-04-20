@@ -1,4 +1,27 @@
+from pathlib import Path
+import os
+
 import numpy as np
+
+LAB_PATH =  os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+def fix_path(path_to_fix: str) -> str:
+    temp_path = path_to_fix
+    if not os.path.exists(temp_path):
+        if os.path.isabs(temp_path): # if already absolute, the path is wrong
+            print(f"File not found: {temp_path}")
+            return None
+        else:
+            path_parts = Path(temp_path).parts
+            if path_parts[0] == "assets":
+                temp_path = path_parts[-1]
+            files = [file for file in Path(LAB_PATH).rglob(str(temp_path)) if file.is_file()]
+            if len(files) > 0:
+                files.sort()
+                temp_path = files[0]
+    print("[fix_path]", path_to_fix, "to", temp_path)
+    return temp_path
+
 
 def r2_score_numpy(y_true, y_pred) -> float:
     import numpy as np
