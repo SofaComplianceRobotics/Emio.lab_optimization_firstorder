@@ -78,13 +78,13 @@ with 2 linear layers of 128 neurons each (`nn.Linear`), and a sigmoid activation
 
 ::::
 
-:::: collapse Train MLP Model
+::::: collapse Train MLP Model
 ### Train MLP Model 
 
 To train your model, you will run the provided `train_model.py` script. 
 The script will preprocess the data, build the MLP, train it, and save the trained model to the specified location.
 
-::: exercise
+:::: exercise
 **Exercise 2:**
 
 1. In `modules/pytorch_mlp.py`, finish implementing the training loop. As loss, use the mean-square error `nn.MSELoss()`. As solver, you can use the Adam algorithm `optimizer = optim.Adam(self.model.parameters())`
@@ -92,14 +92,21 @@ The script will preprocess the data, build the MLP, train it, and save the train
 
 2. Train the model, using the `train_model.py`: 
 
-    #python-button(file="assets/labs/lab_optimization_firstorder/train_model.py", pyargs=["--model-type", "pytorch", "--dataset-path",  "blueleg_beam_cube1331.csv"])
+    :::: select train_dataset 
+    ::: option blueleg_beam_cube1331.csv
+    ::: option blueleg_beam_sphere515.csv
+    ::: option blueleg_beam_real_cube2197.csv
+    ::: option blueleg_beam_real_sphere1018.csv
+    ::::
+
+    #python-button(file="assets/labs/lab_optimization_firstorder/train_model.py", pyargs=["--model-type", "pytorch", "--dataset-path",  "train_dataset"])
 
 3. Inspect the convergence. If necessary, tune the parameters of Adam for better results. 
 
 #solution(file="assets/solutions/lab_optimization_firstorder/answers.md", id="train")
 
-:::
 ::::
+:::::
 
 :::::: collapse Evaluate MLP Model
 ### Evaluate MLP Model
@@ -143,8 +150,6 @@ Run the sofa simulation and observe how the robot moves to the prescribed points
 
 #runsofa-button(file="assets/labs/lab_optimization_firstorder/sofa_sim.py", pyargs=["eval_pytorch_model_path", "sphere", "0.1"])
 
-#solution(file="assets/solutions/lab_optimization_firstorder/answers.md", id="evaluate")
-
 :::
 
 After successfully completing Exercise 4 and showing the working simulation to your teaching crew, you may continue with Exercise 5. 
@@ -157,12 +162,18 @@ Run the above script on the real robot. Describe the observed behavior in your r
 
 :::
 
+#solution(file="assets/solutions/lab_optimization_firstorder/answers.md", id="evaluate")
+
 ::::::
 
 :::: collapse Parametric Model Learning 
 
 Learning inverse kinematics with a deep neural network is one way to do things, but certainly not the only and possibly not the optimal way. In the next practical, we 
-will solve inverse kinematics using a model-based way. However, to get good performance, we will need accurate models. We can use physical principles to setup good models but there are always some parameters that need to be tuned. We can learn these parameters using collected data. This is called **calibration** or parametric model learning.
+will solve inverse kinematics using a model-based way. However, to get good performance, we will need accurate models of the robot. We can use physical principles to setup good models but there are always some parameters that need to be tuned. We can learn these parameters using collected data. This is called **calibration** or parametric model learning.
+
+In the following, we are going to find the Young modulus of the four legs of the robot. As collected, ground-truth data, we will use the synthetic sphere dataset used previously. We will optimize the Young's modulus to ensure the robot’s physical behavior aligns with the simulation results.  This optimization confirms that for a given set of motor positions, the resulting center point corresponds accurately to the predicted position defined by the simulated model. 
+
+Importantly, since the data is derived from simulation, we assume that the mass of the legs (as defined in the simulation) is known.
 
 ::: exercise
 **Exercise 6:**
