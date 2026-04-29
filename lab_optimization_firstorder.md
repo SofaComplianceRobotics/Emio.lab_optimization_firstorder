@@ -72,6 +72,8 @@ with 2 linear layers of 128 neurons each (`nn.Linear`), and a sigmoid activation
 
 #open-button(file="assets/labs/lab_optimization_firstorder/modules/pytorch_mlp.py")
 
+#solution(file="assets/solutions/lab_optimization_firstorder/answers.md", id="MLP")
+
 :::
 
 ::::
@@ -93,6 +95,8 @@ The script will preprocess the data, build the MLP, train it, and save the train
     #python-button(file="assets/labs/lab_optimization_firstorder/train_model.py", pyargs=["--model-type", "pytorch", "--dataset-path",  "blueleg_beam_cube1331.csv"])
 
 3. Inspect the convergence. If necessary, tune the parameters of Adam for better results. 
+
+#solution(file="assets/solutions/lab_optimization_firstorder/answers.md", id="train")
 
 :::
 ::::
@@ -139,6 +143,8 @@ Run the sofa simulation and observe how the robot moves to the prescribed points
 
 #runsofa-button(file="assets/labs/lab_optimization_firstorder/sofa_sim.py", pyargs=["eval_pytorch_model_path", "sphere", "0.1"])
 
+#solution(file="assets/solutions/lab_optimization_firstorder/answers.md", id="evaluate")
+
 :::
 
 After successfully completing Exercise 4 and showing the working simulation to your teaching crew, you may continue with Exercise 5. 
@@ -176,6 +182,7 @@ After around 30 iterations, you should notice a convergence of the Young modulus
 
 ![](assets/labs/lab_optimization_firstorder/data/images/calibration.png)
 
+#solution(file="assets/solutions/lab_optimization_firstorder/answers.md", id="calibrate")
 
 :::
 
